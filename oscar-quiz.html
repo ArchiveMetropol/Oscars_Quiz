@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oscar Winners Quiz (1990-2010)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .option-btn {
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+        }
+        .correct {
+            background-color: #22c55e !important; /* green-500 */
+            color: white !important;
+            border-color: #16a34a; /* green-600 */
+        }
+        .incorrect {
+            background-color: #ef4444 !important; /* red-500 */
+            color: white !important;
+            border-color: #dc2626; /* red-600 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="quiz-container" class="quiz-container w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
+        <div id="quiz-header" class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-yellow-500">Oscar Best Picture Quiz</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">1990 - 2010</p>
+        </div>
+
+        <div id="question-area">
+            <div class="flex justify-between items-center mb-4">
+                <div id="question-counter" class="text-lg font-medium"></div>
+                <div id="score" class="text-lg font-bold bg-yellow-400 text-white py-1 px-3 rounded-lg">Score: 0</div>
+            </div>
+            <div id="question-card" class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-inner">
+                 <h2 id="question-text" class="text-xl md:text-2xl font-semibold text-center h-24 flex items-center justify-center"></h2>
+                 <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <!-- Options will be injected here -->
+                 </div>
+            </div>
+        </div>
+
+        <div id="feedback-area" class="text-center mt-6">
+             <button id="next-btn" class="w-full md:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-lg hidden">Next Question</button>
+        </div>
+        
+        <div id="results-area" class="hidden text-center">
+            <h2 class="text-3xl font-bold mb-4">Quiz Complete!</h2>
+            <p class="text-xl mb-2">Your Final Score:</p>
+            <p id="final-score" class="text-5xl font-extrabold text-yellow-500 mb-6"></p>
+            <p id="score-message" class="text-lg mb-6"></p>
+            <button id="restart-btn" class="bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 shadow-lg">Play Again</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Quiz Data ---
+        const quizData = [
+            { year: 1990, options: ["Dances with Wolves", "Ghost", "Goodfellas", "The Godfather Part III"], answer: "Dances with Wolves" },
+            { year: 1991, options: ["The Silence of the Lambs", "Beauty and the Beast", "JFK", "Bugsy"], answer: "The Silence of the Lambs" },
+            { year: 1992, options: ["Unforgiven", "A Few Good Men", "Scent of a Woman", "Howards End"], answer: "Unforgiven" },
+            { year: 1993, options: ["Schindler's List", "The Fugitive", "The Piano", "In the Name of the Father"], answer: "Schindler's List" },
+            { year: 1994, options: ["Forrest Gump", "Pulp Fiction", "The Shawshank Redemption", "Four Weddings and a Funeral"], answer: "Forrest Gump" },
+            { year: 1995, options: ["Braveheart", "Apollo 13", "Babe", "Sense and Sensibility"], answer: "Braveheart" },
+            { year: 1996, options: ["The English Patient", "Fargo", "Jerry Maguire", "Shine"], answer: "The English Patient" },
+            { year: 1997, options: ["Titanic", "Good Will Hunting", "L.A. Confidential", "As Good as It Gets"], answer: "Titanic" },
+            { year: 1998, options: ["Shakespeare in Love", "Saving Private Ryan", "Life Is Beautiful", "The Thin Red Line"], answer: "Shakespeare in Love" },
+            { year: 1999, options: ["American Beauty", "The Sixth Sense", "The Green Mile", "The Cider House Rules"], answer: "American Beauty" },
+            { year: 2000, options: ["Gladiator", "Crouching Tiger, Hidden Dragon", "Traffic", "Erin Brockovich"], answer: "Gladiator" },
+            { year: 2001, options: ["A Beautiful Mind", "The Lord of the Rings: The Fellowship of the Ring", "Moulin Rouge!", "Gosford Park"], answer: "A Beautiful Mind" },
+            { year: 2002, options: ["Chicago", "The Lord of the Rings: The Two Towers", "Gangs of New York", "The Pianist"], answer: "Chicago" },
+            { year: 2003, options: ["The Lord of the Rings: The Return of the King", "Lost in Translation", "Master and Commander: The Far Side of the World", "Mystic River"], answer: "The Lord of the Rings: The Return of the King" },
+            { year: 2004, options: ["Million Dollar Baby", "The Aviator", "Sideways", "Ray"], answer: "Million Dollar Baby" },
+            { year: 2005, options: ["Crash", "Brokeback Mountain", "Munich", "Good Night, and Good Luck."], answer: "Crash" },
+            { year: 2006, options: ["The Departed", "Little Miss Sunshine", "The Queen", "Babel"], answer: "The Departed" },
+            { year: 2007, options: ["No Country for Old Men", "There Will Be Blood", "Juno", "Michael Clayton"], answer: "No Country for Old Men" },
+            { year: 2008, options: ["Slumdog Millionaire", "The Curious Case of Benjamin Button", "The Dark Knight", "Milk"], answer: "Slumdog Millionaire" },
+            { year: 2009, options: ["The Hurt Locker", "Avatar", "Inglourious Basterds", "Up"], answer: "The Hurt Locker" },
+            { year: 2010, options: ["The King's Speech", "The Social Network", "Inception", "Black Swan"], answer: "The King's Speech" }
+        ];
+
+        // --- DOM Elements ---
+        const quizContainer = document.getElementById('quiz-container');
+        const questionArea = document.getElementById('question-area');
+        const questionCounterEl = document.getElementById('question-counter');
+        const scoreEl = document.getElementById('score');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const resultsArea = document.getElementById('results-area');
+        const finalScoreEl = document.getElementById('final-score');
+        const scoreMessageEl = document.getElementById('score-message');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // --- State Variables ---
+        let shuffledQuestions, currentQuestionIndex;
+        let score = 0;
+        let acceptingAnswers = true;
+
+        // --- Functions ---
+        
+        /**
+         * Shuffles an array in place using the Fisher-Yates algorithm.
+         * @param {Array} array The array to shuffle.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /**
+         * Starts the quiz by resetting state and showing the first question.
+         */
+        function startQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            shuffledQuestions = [...quizData];
+            shuffleArray(shuffledQuestions);
+            
+            resultsArea.classList.add('hidden');
+            questionArea.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            
+            updateScore();
+            setNextQuestion();
+        }
+
+        /**
+         * Displays the current question and its options.
+         */
+        function setNextQuestion() {
+            resetState();
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                showQuestion(shuffledQuestions[currentQuestionIndex]);
+                questionCounterEl.innerText = `Question ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+            } else {
+                showResults();
+            }
+        }
+
+        /**
+         * Resets the UI state for a new question.
+         */
+        function resetState() {
+            acceptingAnswers = true;
+            nextBtn.classList.add('hidden');
+            while (optionsContainer.firstChild) {
+                optionsContainer.removeChild(optionsContainer.firstChild);
+            }
+        }
+
+        /**
+         * Populates the UI with a question's data.
+         * @param {object} question The question object.
+         */
+        function showQuestion(question) {
+            questionTextEl.innerText = `Which film won Best Picture in ${question.year}?`;
+            const shuffledOptions = [...question.options];
+            shuffleArray(shuffledOptions);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-btn', 'w-full', 'p-4', 'rounded-lg', 'border-2', 'border-gray-300', 'dark:border-gray-600', 'bg-white', 'dark:bg-gray-800', 'hover:bg-gray-100', 'dark:hover:bg-gray-700', 'text-left', 'font-medium');
+                button.addEventListener('click', selectAnswer);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        /**
+         * Handles the user's answer selection.
+         * @param {Event} e The click event.
+         */
+        function selectAnswer(e) {
+            if (!acceptingAnswers) return;
+            acceptingAnswers = false;
+
+            const selectedBtn = e.target;
+            const correct = selectedBtn.innerText === shuffledQuestions[currentQuestionIndex].answer;
+
+            if (correct) {
+                score++;
+                updateScore();
+            }
+
+            setStatusClass(selectedBtn, correct);
+            Array.from(optionsContainer.children).forEach(button => {
+                if (button.innerText === shuffledQuestions[currentQuestionIndex].answer) {
+                    setStatusClass(button, true);
+                }
+                button.disabled = true;
+            });
+            
+            nextBtn.classList.remove('hidden');
+        }
+
+        /**
+         * Applies 'correct' or 'incorrect' styling to an element.
+         * @param {HTMLElement} element The element to style.
+         * @param {boolean} correct Whether the answer is correct.
+         */
+        function setStatusClass(element, correct) {
+            element.classList.add(correct ? 'correct' : 'incorrect');
+        }
+        
+        /**
+         * Updates the score display.
+         */
+        function updateScore() {
+            scoreEl.innerText = `Score: ${score}`;
+        }
+        
+        /**
+         * Displays the final results of the quiz.
+         */
+        function showResults() {
+            questionArea.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            resultsArea.classList.remove('hidden');
+            finalScoreEl.innerText = `${score} / ${shuffledQuestions.length}`;
+            
+            let message = '';
+            const percentage = (score / shuffledQuestions.length) * 100;
+            if (percentage === 100) {
+                message = "Perfect score! You're a true cinephile!";
+            } else if (percentage >= 75) {
+                message = "Excellent! You really know your movies.";
+            } else if (percentage >= 50) {
+                message = "Good job! A respectable score.";
+            } else {
+                message = "Time for a movie marathon? Keep trying!";
+            }
+            scoreMessageEl.innerText = message;
+        }
+
+        // --- Event Listeners ---
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            setNextQuestion();
+        });
+
+        restartBtn.addEventListener('click', startQuiz);
+
+        // --- Initial Load ---
+        window.onload = startQuiz;
+    </script>
+</body>
+</html>
